@@ -1,7 +1,7 @@
-const UserService = require("../services/userService");
+const UserService = require("../services/user.service");
 
 module.exports = {
-  createUser: async (req, res, next) => {
+  create: async (req, res, next) => {
     try {
       console.log("createUser payload:", req.body);
       const user = await UserService.createUser(req.body);
@@ -12,7 +12,7 @@ module.exports = {
     }
   },
 
-  getAllUsers: async (req, res, next) => {
+  findAll: async (req, res, next) => {
     try {
       const users = await UserService.getAllUsers();
       res.json(users);
@@ -22,7 +22,7 @@ module.exports = {
     }
   },
 
-  getUserById: async (req, res, next) => {
+  findById: async (req, res, next) => {
     try {
       const user = await UserService.getUserById(req.params.id);
       if (!user) return res.status(404).json({ error: "User not found" });
@@ -33,7 +33,7 @@ module.exports = {
     }
   },
 
-  updateUser: async (req, res, next) => {
+  update: async (req, res, next) => {
     try {
       const user = await UserService.updateUser(req.params.id, req.body);
       res.json(user);
@@ -43,7 +43,7 @@ module.exports = {
     }
   },
 
-  deleteUser: async (req, res, next) => {
+  delete: async (req, res, next) => {
     try {
       const result = await UserService.deleteUser(req.params.id);
       res.json(result);

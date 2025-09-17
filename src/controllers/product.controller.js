@@ -1,7 +1,7 @@
-const ProductService = require("../services/productService");
+const ProductService = require("../services/product.service");
 
 module.exports = {
-  createProduct: async (req, res, next) => {
+  create: async (req, res, next) => {
     try {
       console.log("createProduct payload:", req.body);
       const product = await ProductService.createProduct(req.body);
@@ -12,7 +12,7 @@ module.exports = {
     }
   },
 
-  getAllProducts: async (req, res, next) => {
+  findAll: async (req, res, next) => {
     try {
       const products = await ProductService.getAllProducts();
       res.json(products);
@@ -22,7 +22,7 @@ module.exports = {
     }
   },
 
-  getProductById: async (req, res, next) => {
+  findById: async (req, res, next) => {
     try {
       const product = await ProductService.getProductById(req.params.id);
       if (!product) return res.status(404).json({ error: "Product not found" });
@@ -33,9 +33,12 @@ module.exports = {
     }
   },
 
-  updateProduct: async (req, res, next) => {
+  update: async (req, res, next) => {
     try {
-      const product = await ProductService.updateProduct(req.params.id, req.body);
+      const product = await ProductService.updateProduct(
+        req.params.id,
+        req.body
+      );
       res.json(product);
     } catch (err) {
       console.error("updateProduct error:", err);
@@ -43,7 +46,7 @@ module.exports = {
     }
   },
 
-  deleteProduct: async (req, res, next) => {
+  delete: async (req, res, next) => {
     try {
       const result = await ProductService.deleteProduct(req.params.id);
       res.json(result);

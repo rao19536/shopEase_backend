@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       tableName: "users",
-      underscored: true, // optional, for snake_case columns
+      // underscored: true, // optional, for snake_case columns
+      timestamps: true,
     }
   );
 
