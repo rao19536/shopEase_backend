@@ -1,11 +1,10 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
-'use strict';
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('products', {
+    await queryInterface.createTable("products", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -23,6 +22,9 @@ module.exports = {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: false,
       },
+      image: {
+        type: Sequelize.STRING,
+      },
       stock: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -32,27 +34,26 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'users', // matches the table name from create-users migration
-          key: 'id',
+          model: "users", // matches the table name from create-users migration
+          key: "id",
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE', // if user deleted → delete products too
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE", // if user deleted → delete products too
       },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.fn('NOW'),
+        defaultValue: Sequelize.fn("NOW"),
       },
       updatedAt: {
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.fn('NOW'),
+        defaultValue: Sequelize.fn("NOW"),
       },
     });
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('products');
+    await queryInterface.dropTable("products");
   },
 };
-
