@@ -1,9 +1,49 @@
 const { User, Product } = require("../database/models");
+const {
+  createUserSchema,
+  updateUserSchema,
+} = require("../validations/user.validation");
 
 module.exports = {
   createUser: async ({ name, email, password }) => {
-    // You can later add hashing for password here
-    return User.create({ name, email, password });
+    try {
+      const validationResult = createUserSchema.validate(
+        { name, email, password }
+        // { abortEarly: false } // <-- show all validation errors
+      );
+
+      if (validationResult.error) {
+        const errorDetails = validationResult.error.details.map((err) => ({
+          field: err.path.join("."),
+          message: err.message.replace(/["]/g, ""), // remove extra quotes
+        }));
+
+        return {
+          statusCode: 400,
+          error: true,
+          data: null,
+          message: "Validation failed",
+          errors: errorDetails,
+          exceptionType: "VALIDATION_EXCEPTION",
+        };
+      }
+      const newUser = await User.create({ name, email, password });
+
+      return {
+        statusCode: 201,
+        error: false,
+        data: newUser,
+        message: "User created successfully",
+      };
+    } catch (err) {
+      return {
+        statusCode: 500,
+        error: true,
+        data: null,
+        message: err.message || "Internal server error",
+        exceptionType: "SERVER_EXCEPTION",
+      };
+    }
   },
   getAllUsers: async () => {
     return User.findAll({
@@ -16,6 +56,9 @@ module.exports = {
     });
   },
   updateUser: async (id, updates) => {
+    const { error } = updateUserSchema.validate(updates);
+    if (error) throw new Error(error.details[0].message);
+
     const user = await User.findByPk(id);
     if (!user) throw new Error("User not found");
     return user.update(updates);
@@ -27,4 +70,3 @@ module.exports = {
     return { message: "User deleted" };
   },
 };
-
