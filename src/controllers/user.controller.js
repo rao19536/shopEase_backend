@@ -1,55 +1,58 @@
 const UserService = require("../services/user.service");
+const { ApiError } = require("../utils/ApiError");
+const { created, updated, deleted, ok } = require("../utils/http");
 
 module.exports = {
   create: async (req, res, next) => {
     try {
-      console.log("createUser payload:", req.body);
       const user = await UserService.createUser(req.body);
-      res.status(201).json(user);
-    } catch (err) {
-      console.error("createUser error:", err);
-      res.status(400).json({ error: err.message });
+      return res
+        .status(201)
+        .json(created(user, "User created successfully", req.originalUrl));
+    } catch (e) {
+      next(e);
     }
   },
 
   findAll: async (req, res, next) => {
     try {
       const users = await UserService.getAllUsers();
-      res.json(users);
-    } catch (err) {
-      console.error("getAllUsers error:", err);
-      next(err);
+      return res.json(ok(users, "OK", req.originalUrl)); // <-- consistent
+    } catch (e) {
+      next(e);
     }
   },
 
   findById: async (req, res, next) => {
     try {
       const user = await UserService.getUserById(req.params.id);
-      if (!user) return res.status(404).json({ error: "User not found" });
-      res.json(user);
-    } catch (err) {
-      console.error("getUserById error:", err);
-      next(err);
+      if (!user)
+        throw new ApiError(404, "User not found", {
+          exceptionType: "NOT_FOUND",
+        });
+      return res.json(ok(user, "OK", req.originalUrl));
+    } catch (e) {
+      next(e);
     }
   },
 
   update: async (req, res, next) => {
     try {
       const user = await UserService.updateUser(req.params.id, req.body);
-      res.json(user);
-    } catch (err) {
-      console.error("updateUser error:", err);
-      res.status(400).json({ error: err.message });
+      return res.json(
+        updated(user, "User updated successfully", req.originalUrl)
+      );
+    } catch (e) {
+      next(e);
     }
   },
 
   delete: async (req, res, next) => {
     try {
-      const result = await UserService.deleteUser(req.params.id);
-      res.json(result);
-    } catch (err) {
-      console.error("deleteUser error:", err);
-      res.status(400).json({ error: err.message });
+      await UserService.deleteUser(req.params.id);
+      return res.json(deleted("User deleted successfully", req.originalUrl));
+    } catch (e) {
+      next(e);
     }
   },
 };

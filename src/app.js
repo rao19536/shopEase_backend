@@ -1,34 +1,34 @@
 const express = require("express");
-const { testConnection } = require("./database/connect");
 const routes = require("./routes");
+const { errorHandler } = require("./middlewares/errorHandler");
+
 const app = express();
 
-async function startServer() {
-  try {
-    await testConnection();
+app.use(express.json());
 
-    // Middlewares
-    app.use(express.json());
-    app.use((req, res, next) => {
-      console.log(
-        `[Request] ${req.method} ${req.url} - body: ${JSON.stringify(req.body)}`
-      );
-      next();
-    });
+app.use((req, _res, next) => {
+  const body = { ...req.body };
+  if (body.password) body.password = "***";
+  if (body.confirmPassword) body.confirmPassword = "***";
+  console.log(
+    `[Request] ${req.method} ${req.originalUrl} - body: ${JSON.stringify(body)}`
+  );
+  next();
+});
 
-    // Routes
-    routes(app);
+routes(app);
 
-    // Start the server after DB connection
-    app.listen(3000, () => {
-      console.log("Server running on port 3000");
-    });
-  } catch (err) {
-    console.error("❌ Failed to start the server due to database issues:", err);
-    process.exit(1); // Exit the process if DB connection fails
-  }
-}
+app.use((req, res) => {
+  res.status(404).json({
+    error: true,
+    statusCode: 404,
+    message: "Not Found",
+    timestamp: new Date().toISOString(),
+    path: req.originalUrl,
+    exceptionType: "NOT_FOUND",
+  });
+});
 
-startServer();
+app.use(errorHandler);
 
 module.exports = app;

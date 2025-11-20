@@ -1,49 +1,23 @@
 const { User, Product } = require("../database/models");
+const { ApiError } = require("../utils/ApiError");
 const {
   createUserSchema,
   updateUserSchema,
 } = require("../validations/user.validation");
 
 module.exports = {
-  createUser: async ({ name, email, password }) => {
-    try {
-      const validationResult = createUserSchema.validate(
-        { name, email, password }
-        // { abortEarly: false } // <-- show all validation errors
-      );
-
-      if (validationResult.error) {
-        const errorDetails = validationResult.error.details.map((err) => ({
-          field: err.path.join("."),
-          message: err.message.replace(/["]/g, ""), // remove extra quotes
-        }));
-
-        return {
-          statusCode: 400,
-          error: true,
-          data: null,
-          message: "Validation failed",
-          errors: errorDetails,
-          exceptionType: "VALIDATION_EXCEPTION",
-        };
-      }
-      const newUser = await User.create({ name, email, password });
-
-      return {
-        statusCode: 201,
-        error: false,
-        data: newUser,
-        message: "User created successfully",
-      };
-    } catch (err) {
-      return {
-        statusCode: 500,
-        error: true,
-        data: null,
-        message: err.message || "Internal server error",
-        exceptionType: "SERVER_EXCEPTION",
-      };
+  createUser: async (payload) => {
+    const { error } = createUserSchema.validate(payload, { abortEarly: false });
+    if (error) {
+      const details = error.details.map((d) => ({
+        field: d.path.join("."),
+        message: d.message.replace(/["]/g, ""),
+      }));
+      throw ApiError.validation(details);
     }
+
+    const user = await User.create(payload);
+    return user;
   },
   getAllUsers: async () => {
     return User.findAll({
@@ -55,18 +29,20 @@ module.exports = {
       include: { model: Product, as: "products" },
     });
   },
-  updateUser: async (id, updates) => {
-    const { error } = updateUserSchema.validate(updates);
-    if (error) throw new Error(error.details[0].message);
-
+  updateUser: async (id, payload) => {
     const user = await User.findByPk(id);
-    if (!user) throw new Error("User not found");
-    return user.update(updates);
+    if (!user)
+      throw new ApiError(404, "User not found", { exceptionType: "NOT_FOUND" });
+
+    await user.update(payload);
+    return user;
   },
   deleteUser: async (id) => {
     const user = await User.findByPk(id);
-    if (!user) throw new Error("User not found");
+    if (!user)
+      throw new ApiError(404, "User not found", { exceptionType: "NOT_FOUND" });
+
     await user.destroy();
-    return { message: "User deleted" };
+    return true;
   },
 };
