@@ -9,11 +9,7 @@ module.exports = {
   createUser: async (payload) => {
     const { error } = createUserSchema.validate(payload, { abortEarly: false });
     if (error) {
-      const details = error.details.map((d) => ({
-        field: d.path.join("."),
-        message: d.message.replace(/["]/g, ""),
-      }));
-      throw ApiError.validation(details);
+      throw ApiError.validation(error.details);
     }
 
     const user = await User.create(payload);
@@ -21,7 +17,11 @@ module.exports = {
   },
   getAllUsers: async () => {
     return User.findAll({
-      include: { model: Product, as: "products" },
+      include: {
+        model: Product,
+        as: "products",
+      },
+      order: [["id", "DESC"]],
     });
   },
   getUserById: async (id) => {
@@ -31,9 +31,12 @@ module.exports = {
   },
   updateUser: async (id, payload) => {
     const user = await User.findByPk(id);
-    if (!user)
-      throw new ApiError(404, "User not found", { exceptionType: "NOT_FOUND" });
+    if (!user) throw ApiError.notFound("User not found");
 
+    const { error } = updateUserSchema.validate(payload, { abortEarly: false });
+    if (error) {
+      throw ApiError.validation(error.details);
+    }
     await user.update(payload);
     return user;
   },

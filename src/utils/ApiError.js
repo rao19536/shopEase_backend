@@ -7,11 +7,14 @@ class ApiError extends Error {
     Error.captureStackTrace?.(this, this.constructor);
   }
 
-  // Common factories
   static validation(details, message = "Validation failed") {
+    const errors = details.map((d) => ({
+      field: d.path.join("."),
+      message: d.message.replace(/["]/g, ""),
+    }));
     return new ApiError(400, message, {
       exceptionType: "VALIDATION_EXCEPTION",
-      details,
+      details: errors,
     });
   }
   static notFound(message = "Not found", details = null) {
