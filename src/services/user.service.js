@@ -4,6 +4,7 @@ const {
   createUserSchema,
   updateUserSchema,
 } = require("../validations/user.validation");
+const bcrypt = require("bcryptjs");
 
 module.exports = {
   createUser: async (payload) => {
@@ -11,8 +12,11 @@ module.exports = {
     if (error) {
       throw ApiError.validation(error.details);
     }
-
-    const user = await User.create(payload);
+    const hashedPassword = await bcrypt.hash(payload.password, 10);
+    const user = await User.create({
+      ...payload,
+      password: hashedPassword,
+    });
     return user;
   },
   getAllUsers: async () => {
@@ -37,8 +41,21 @@ module.exports = {
     if (error) {
       throw ApiError.validation(error.details);
     }
-    await user.update(payload);
-    return user;
+    const hashedPassword = await bcrypt.hash(payload.password, 10);
+    try {
+      await user.update({
+        ...payload,
+        password: hashedPassword,
+      });
+      return user;
+    } catch (err) {
+      if (err.name === "SequelizeUniqueConstraintError") {
+        throw ApiError.validation([
+          { message: "Email already exists", path: ["email"] },
+        ]);
+      }
+      throw err;
+    }
   },
   deleteUser: async (id) => {
     const user = await User.findByPk(id);

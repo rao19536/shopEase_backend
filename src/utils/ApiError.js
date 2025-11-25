@@ -17,6 +17,14 @@ class ApiError extends Error {
       details: errors,
     });
   }
+
+  static fieldValidation(errors, message = "Validation failed") {
+    return new ApiError(400, message, {
+      exceptionType: "VALIDATION_EXCEPTION",
+      details: errors,
+    });
+  }
+
   static notFound(message = "Not found", details = null) {
     return new ApiError(404, message, { exceptionType: "NOT_FOUND", details });
   }

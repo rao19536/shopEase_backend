@@ -1,35 +1,25 @@
 const Joi = require("joi");
 
-const createUserSchema = Joi.object({
-  name: Joi.string().required().messages({
+const baseUserSchema = Joi.object({
+  name: Joi.string().trim().min(1).messages({
     "string.empty": "Name is required",
-    "any.required": "Name is required",
   }),
-  email: Joi.string().email().required().messages({
+  email: Joi.string().trim().lowercase().email().messages({
     "string.email": "Email must be a valid email",
     "string.empty": "Email is required",
-    "any.required": "Email is required",
   }),
-  password: Joi.string().required().messages({
+  password: Joi.string().min(4).messages({
     "string.empty": "Password is required",
-    "any.required": "Password is required",
+    "string.min": "Password must be at least 4 characters",
   }),
-}).options({ abortEarly: false });
+  role: Joi.string().valid("USER", "ADMIN", "SUPER_ADMIN"),
+}).options({ abortEarly: false, stripUnknown: true });
 
-const updateUserSchema = Joi.object({
-  name: Joi.string().required().messages({
-    "string.empty": "Name is required",
-    "any.required": "Name is required",
-  }),
-  email: Joi.string().email().required().messages({
-    "string.email": "Email must be a valid email",
-    "string.empty": "Email is required",
-    "any.required": "Email is required",
-  }),
-  password: Joi.string().required().messages({
-    "string.empty": "Password is required",
-    "any.required": "Password is required",
-  }),
-}).options({ abortEarly: false });
+const createUserSchema = baseUserSchema.fork(
+  ["name", "email", "password"],
+  (schema) => schema.required()
+);
+
+const updateUserSchema = baseUserSchema.min(1);
 
 module.exports = { createUserSchema, updateUserSchema };

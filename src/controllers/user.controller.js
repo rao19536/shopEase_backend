@@ -9,15 +9,20 @@ module.exports = {
       return res
         .status(201)
         .json(created(user, "User created successfully", req.originalUrl));
-    } catch (e) {
-      next(e);
+    } catch (err) {
+      if (err.name === "SequelizeUniqueConstraintError") {
+        throw ApiError.validation([
+          { message: "Email already exists", path: ["email"] },
+        ]);
+      }
+      next(err);
     }
   },
 
   findAll: async (req, res, next) => {
     try {
       const users = await UserService.getAllUsers();
-      return res.json(ok(users, "OK", req.originalUrl)); // <-- consistent
+      return res.json(ok(users, "OK", req.originalUrl));
     } catch (e) {
       next(e);
     }

@@ -7,6 +7,11 @@ module.exports = (sequelize, DataTypes) => {
       id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
       name: { type: DataTypes.STRING, allowNull: false },
       email: { type: DataTypes.STRING, allowNull: false, unique: true },
+      role: {
+        type: DataTypes.ENUM("SUPER_ADMIN", "ADMIN", "USER"),
+        allowNull: false,
+        defaultValue: 'USER',
+      },
       password: { type: DataTypes.STRING, allowNull: false },
     },
     {
