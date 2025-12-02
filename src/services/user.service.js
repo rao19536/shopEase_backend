@@ -42,20 +42,11 @@ module.exports = {
       throw ApiError.validation(error.details);
     }
     const hashedPassword = await bcrypt.hash(payload.password, 10);
-    try {
-      await user.update({
-        ...payload,
-        password: hashedPassword,
-      });
-      return user;
-    } catch (err) {
-      if (err.name === "SequelizeUniqueConstraintError") {
-        throw ApiError.validation([
-          { message: "Email already exists", path: ["email"] },
-        ]);
-      }
-      throw err;
-    }
+    await user.update({
+      ...payload,
+      password: hashedPassword,
+    });
+    return user;
   },
   deleteUser: async (id) => {
     const user = await User.findByPk(id);

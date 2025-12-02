@@ -47,8 +47,13 @@ module.exports = {
       return res.json(
         updated(user, "User updated successfully", req.originalUrl)
       );
-    } catch (e) {
-      next(e);
+    } catch (err) {
+      if (err.name === "SequelizeUniqueConstraintError") {
+        throw ApiError.validation([
+          { message: "Email already exists", path: ["email"] },
+        ]);
+      }
+      next(err);
     }
   },
 
