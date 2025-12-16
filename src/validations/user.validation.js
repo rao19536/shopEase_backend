@@ -12,7 +12,7 @@ const baseUserSchema = Joi.object({
     "string.empty": "Password is required",
     "string.min": "Password must be at least 4 characters",
   }),
-  role: Joi.string().valid("USER", "ADMIN", "SUPER_ADMIN"),
+  role: Joi.string().valid("USER", "ADMIN", "SUPER_ADMIN", "SELLER"),
 }).options({ abortEarly: false, stripUnknown: true });
 
 const createUserSchema = baseUserSchema.fork(

@@ -59,10 +59,19 @@ module.exports = {
 
   delete: async (req, res, next) => {
     try {
-      await UserService.deleteUser(req.params.id);
+      await UserService.deleteUser(req.params.id, req.body);
       return res.json(deleted("User deleted successfully", req.originalUrl));
     } catch (e) {
       next(e);
+    }
+  },
+
+  updateUserStatus: async (req, res, next) => {
+    try {
+      const user = await UserService.updateUserStatus(req.params.id, req.body);
+      return res.json(updated(user, "Status updated Successfully"));
+    } catch (err) {
+      next(err);
     }
   },
 };

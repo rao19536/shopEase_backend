@@ -8,7 +8,18 @@ module.exports = {
       const tokenPayload = await authService.login(req.body);
       const accessToken = signAccessToken(tokenPayload);
       const refreshToken = signRefreshToken({ id: tokenPayload.id });
-      return res.json(ok({ accessToken, refreshToken }, "Login successful", req.originalUrl));
+      return res.json(
+        ok(
+          {
+            email: tokenPayload.email,
+            role: tokenPayload.role,
+            accessToken,
+            refreshToken,
+          },
+          "Login successful",
+          req.originalUrl
+        )
+      );
     } catch (err) {
       next(err);
     }

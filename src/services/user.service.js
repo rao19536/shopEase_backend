@@ -21,11 +21,13 @@ module.exports = {
   },
   getAllUsers: async () => {
     return User.findAll({
+      where: { active: true },
       include: {
         model: Product,
         as: "products",
+        required: false,
       },
-      order: [["id", "DESC"]],
+      order: [["id", "ASC"]],
     });
   },
   getUserById: async (id) => {
@@ -34,6 +36,7 @@ module.exports = {
     });
   },
   updateUser: async (id, payload) => {
+    console.log("id=>test", id, payload);
     const user = await User.findByPk(id);
     if (!user) throw ApiError.notFound("User not found");
 
@@ -41,11 +44,16 @@ module.exports = {
     if (error) {
       throw ApiError.validation(error.details);
     }
-    const hashedPassword = await bcrypt.hash(payload.password, 10);
-    await user.update({
-      ...payload,
-      password: hashedPassword,
-    });
+    const updateData = { ...payload };
+
+    if (payload.password) {
+      updateData.password = await bcrypt.hash(payload.password, 10);
+    } else {
+      delete updateData.password;
+    }
+
+    await user.update(updateData);
+
     return user;
   },
   deleteUser: async (id) => {
@@ -55,5 +63,15 @@ module.exports = {
 
     await user.destroy();
     return true;
+  },
+  updateUserStatus: async (id, payload) => {
+    const user = await User.findByPk(id);
+    if (!user) throw ApiError.notFound("User not found");
+    console.log("payload=>", payload);
+    const updatedUser = await user.update({
+      active: payload?.active,
+    });
+
+    return updatedUser;
   },
 };

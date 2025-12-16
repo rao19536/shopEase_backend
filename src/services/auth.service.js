@@ -9,8 +9,7 @@ module.exports = {
     if (error) {
       throw ApiError.validation(error.details);
     }
-    const user = await User.findOne({ where: { email: payload.email } });
-    console.log('user=>', user)
+    const user = await User.scope('withPassword').findOne({ where: { email: payload.email } });
     const authError = ApiError.unauthorized("Invalid email or password");
     if (!user) {
       throw authError;
