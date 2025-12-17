@@ -1,9 +1,10 @@
 class ApiError extends Error {
-  constructor(statusCode, message, { exceptionType, details } = {}) {
+  constructor(statusCode, message, { exceptionType, details = [] } = {}) {
     super(message);
     this.statusCode = statusCode;
     this.exceptionType = exceptionType;
-    this.details = details;
+    this.details = Array.isArray(details) ? details : [details];
+
     Error.captureStackTrace?.(this, this.constructor);
   }
 
@@ -12,6 +13,7 @@ class ApiError extends Error {
       field: d.path.join("."),
       message: d.message.replace(/["]/g, ""),
     }));
+
     return new ApiError(400, message, {
       exceptionType: "VALIDATION_EXCEPTION",
       details: errors,
@@ -25,37 +27,44 @@ class ApiError extends Error {
     });
   }
 
-  static notFound(message = "Not found", details = null) {
-    return new ApiError(404, message, { exceptionType: "NOT_FOUND", details });
+  static notFound(message = "Not found") {
+    return new ApiError(404, message, {
+      exceptionType: "NOT_FOUND",
+      details: [{ message }],
+    });
   }
-  static unauthorized(message = "Unauthorized", details = null) {
+
+  static unauthorized(message = "Unauthorized") {
     return new ApiError(401, message, {
       exceptionType: "UNAUTHORIZED",
-      details,
+      details: [{ message }],
     });
   }
-  static forbidden(message = "Forbidden", details = null) {
-    return new ApiError(403, message, { exceptionType: "FORBIDDEN", details });
-  }
-  static conflict(message = "Conflict", details = null) {
-    return new ApiError(409, message, { exceptionType: "CONFLICT", details });
-  }
-  static tooManyRequests(message = "Too many requests", details = null) {
-    return new ApiError(429, message, {
-      exceptionType: "TOO_MANY_REQUESTS",
-      details,
+
+  static forbidden(message = "Forbidden") {
+    return new ApiError(403, message, {
+      exceptionType: "FORBIDDEN",
+      details: [{ message }],
     });
   }
-  static serverError(message = "Internal server error", details = null) {
+
+  static conflict(message = "Conflict") {
+    return new ApiError(409, message, {
+      exceptionType: "CONFLICT",
+      details: [{ message }],
+    });
+  }
+
+  static serverError(message = "Internal server error") {
     return new ApiError(500, message, {
       exceptionType: "SERVER_EXCEPTION",
-      details,
+      details: [{ message }],
     });
   }
   static gatewayTimeout(message = "Gateway timeout", details = null) {
     return new ApiError(504, message, {
       exceptionType: "GATEWAY_TIMEOUT",
-      details,
+      details: [{ message }],
     });
   }
 }

@@ -1,19 +1,18 @@
 const { Product, User } = require("../database/models");
+const { ApiError } = require("../utils/ApiError");
 
 module.exports = {
-  createProduct: async ({
-    name,
-    description,
-    price,
-    stock = 0,
-    image,
-    userId,
-  }) => {
+  createProduct: async (payload, userId) => {
     const user = await User.findByPk(userId);
-    if (!user) {
-      throw new Error("User not found");
-    }
-    return Product.create({ name, description, price, stock, image, userId });
+    if (!user) throw ApiError.notFound("User not found");
+    if (user.status !== "SELLER")
+      throw ApiError.forbidden(
+        "Unauthorized user. Only seller can add products"
+      );
+    return Product.create({
+      ...payload,
+      userId,
+    });
   },
 
   getAllProducts: async () => {
@@ -30,7 +29,7 @@ module.exports = {
 
   updateProduct: async (id, updates) => {
     const product = await Product.findByPk(id);
-    if (!product) throw new Error("Product not found");
+    if (!product) throw new ApiError("Product not found");
     return product.update(updates);
   },
 
@@ -41,4 +40,3 @@ module.exports = {
     return { message: "Product deleted" };
   },
 };
-

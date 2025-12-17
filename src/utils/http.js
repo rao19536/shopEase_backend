@@ -39,7 +39,7 @@ const deleted = (message = "Deleted successfully", path) => ({
 const fail = (statusCode, message, { errors, exceptionType, path } = {}) => ({
   error: true,
   statusCode,
-  message,
+  // message,
   errors,
   exceptionType,
   timestamp: now(),
